@@ -118,9 +118,13 @@ private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     let codingPath: [any CodingKey]
 
     private func child(_ key: Key) -> Node {
+        child(named: key.stringValue)
+    }
+
+    private func child(named name: String) -> Node {
         let child = Node()
         if case .object(var fields) = node.content {
-            fields[key.stringValue] = child
+            fields[name] = child
             node.content = .object(fields)
         }
         return child
@@ -182,7 +186,8 @@ private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     }
 
     mutating func superEncoder() -> any Encoder {
-        NodeEncoder(node: child(Key(stringValue: "super")!), codingPath: codingPath)
+        // Named directly: the caller's `CodingKeys` rarely has a `super` case.
+        NodeEncoder(node: child(named: "super"), codingPath: codingPath)
     }
 
     mutating func superEncoder(forKey key: Key) -> any Encoder {
