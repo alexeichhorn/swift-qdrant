@@ -51,6 +51,32 @@ import Testing
     #expect(throws: EncodingError.self) { try QdrantPayloadEncoder().encode(["not", "an", "object"]) }
 }
 
+private class Product: Encodable {
+    let name = "Desk Lamp"
+}
+
+// Encodes its superclass the way Swift's docs recommend: into `superEncoder()`, which nests it under the key "super".
+private final class Lamp: Product {
+    let watts = 40
+
+    private enum CodingKeys: String, CodingKey {
+        case watts
+    }
+
+    override func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(watts, forKey: .watts)
+        try super.encode(to: container.superEncoder())
+    }
+}
+
+@Test func payloadEncoderEncodesASubclassThroughItsSuperclass() throws {
+    let payload = try QdrantPayloadEncoder().encode(Lamp())
+
+    #expect(payload["watts"]?.kind == .integerValue(40))
+    #expect(payload["super"]?.structValue.fields["name"]?.kind == .stringValue("Desk Lamp"))
+}
+
 @Test func filterHelpersBuildTheConditionsQdrantExpects() throws {
     let id = UUID(uuidString: "01234567-89AB-4DEF-8123-456789ABCDEF")!
     let filter = QdrantFilter(
