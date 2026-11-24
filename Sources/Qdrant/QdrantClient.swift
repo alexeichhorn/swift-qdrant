@@ -9,7 +9,7 @@ import GRPCNIOTransportHTTP2
 ///
 /// ```swift
 /// let qdrant = try QdrantClient(url: "http://localhost:6334", apiKey: nil, timeout: .seconds(30))
-/// Task { try await qdrant.run() }
+/// Task { try? await qdrant.run() }
 /// let info = try await qdrant.collectionInfo(.with { $0.collectionName = "products" })
 /// ```
 ///
