@@ -1,0 +1,38 @@
+name: Swift CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  macos-tests:
+    name: macOS Unit Tests
+    runs-on: macos-26
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build -v
+      - name: Run tests
+        run: swift test -v
+
+  linux-tests:
+    name: Linux Unit Tests (Swift ${{ matrix.swift }})
+    runs-on: ubuntu-latest
+    container: swift:${{ matrix.swift }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # 6.2 is the lowest version the manifest allows.
+        swift: ["6.2", "6.4"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build -v
+      - name: Run tests
+        run: swift test -v
